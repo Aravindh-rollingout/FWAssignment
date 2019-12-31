@@ -19,6 +19,8 @@ Main Execution starts at FreshStore.java.
 
 5.ClientStore - contains implementation of CRD operations over data store.
 
+6.FileOperator - performs file operations for client data.
+
 
 Problem statement interpretation:
 
