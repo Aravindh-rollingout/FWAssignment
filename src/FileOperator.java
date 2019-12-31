@@ -2,6 +2,7 @@ import com.google.gson.Gson;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.io.File.separatorChar;
 
@@ -32,7 +33,7 @@ public class FileOperator {
         }
 
         if (dataObj.contains(fc)) {
-            throw new UserAlreadyExistsException("User with the same name already exists");
+            throw new UserAlreadyExistsException("User with the same name already exists. Try again.\n");
         } else {
             dataObj.getFreshClients().add(fc);
         }
@@ -47,7 +48,7 @@ public class FileOperator {
         FileWriter writer = new FileWriter(clientDataFile);
         writer.write(json);
         writer.close();
-        System.out.println(json);
+        //System.out.println(json);
     }
 
     public static FreshClient getClientFromFile(String userName) {
@@ -63,6 +64,10 @@ public class FileOperator {
             return null;
         }
         FreshClient client = dataObj.getClient(userName);
+        if(client == null)
+        {
+            System.out.println("Client not found. Returning to main menu");
+        }
         return client;
     }
 
@@ -96,5 +101,16 @@ public class FileOperator {
     }
 
 
+    public static void storeJsonInFile(File file, HashMap dataMap) throws IOException {
+        final long maxSizeOneGB = 1073741824L;
+        FileWriter writer = new FileWriter(file);
+        Gson gson = new Gson();
+        String json = gson.toJson(dataMap);
+        if (json.getBytes().length > maxSizeOneGB) {
+            throw new IOException("File size will exceed 1GB on adding this key-value pair");
+        }
+        writer.write(json);
+        writer.close();
+    }
 }
 

@@ -25,10 +25,13 @@ public class ClientStore {
         }
     }
 
-    public void storeKey(String key) throws IOException {
+    public void storeKey(String key) throws IOException, KeyNotFoundException {
         lock.writeLock().lock();
-        final long maxSizeOneGB = 1073741824L;
         try {
+            if (isKeyFound(key)) {
+                throw new KeyNotFoundException("Key already exists.");
+            }
+            ;
             TTLValueObj ttlValueObj = null;
             String prompt = ("Do you want to enter a ttl value for this Key\n" +
                     "1.Yes.\n" +
@@ -36,6 +39,7 @@ public class ClientStore {
             int choice = FreshStore.getIntegerInput(prompt, 1, 2);
             Long ttl = 0l;
             if (choice == 1) {
+
                 System.out.println("Enter ttl value");
                 Long inputTtl = FreshStore.scan.nextLong();
                 ttl = inputTtl + (System.currentTimeMillis() / 1000);
@@ -45,51 +49,25 @@ public class ClientStore {
             ttlValueObj = new TTLValueObj(ttl);
             JsonObject jsonObject = null;
             FreshStore.scan.nextLine();
-            long valueLength = 0l;
-            do {
-                System.out.println("Enter valid json string");
-
-                String jsonString = FreshStore.scan.nextLine();
-                valueLength = jsonString.getBytes().length;
-                if (valueLength > 16384l) {
-                    throw new IOException("Size of value exceeds 16KB limit");
-                }
-                try {
-                    JsonElement jsonElement = new JsonParser().parse(jsonString);
-                    jsonObject = jsonElement.getAsJsonObject();
-                } catch (JsonSyntaxException | IllegalStateException e) {
-                    System.out.println("Invalid json string");
-                }
-            } while (jsonObject == null);
-
+            jsonObject = getJsonObjectFromUser();
             ttlValueObj.setValue(jsonObject);
             dataMap.put(key, ttlValueObj);
-            if ((file.length() + valueLength + ttl.toString().getBytes().length) > maxSizeOneGB) {
-                throw new IOException("File size will exceed 1GB on adding this key-value pair");
-            }
-            FileWriter writer = new FileWriter(file);
-            Gson gson = new Gson();
-            String json = gson.toJson(dataMap);
-            writer.write(json);
-            writer.close();
+            FileOperator.storeJsonInFile(file, dataMap);
+            System.out.println("Key has been stored");
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    public void read(String key) {
+
+    public void read(String key) throws KeyNotFoundException {
         lock.readLock().lock();
         try {
+            if (!isKeyFound(key)) {
+                throw new KeyNotFoundException("Key not found. Try some other key name");
+            }
             LinkedTreeMap valueObj = (LinkedTreeMap) dataMap.get(key);
-            if (valueObj == null || valueObj.isEmpty()) {
-                System.out.println("Key not found");
-                return;
-            }
-            long ttl = (long) Double.parseDouble(valueObj.get("ttl").toString());
-            if (ttl > 0 && ttl < (System.currentTimeMillis() / 1000)) {
-                System.out.println("Key not found");
-                return;
-            }
+            checkTtlValidity(valueObj);
 
             Gson gson = new Gson();
             String value = gson.toJson(valueObj.get("value"));
@@ -100,6 +78,64 @@ public class ClientStore {
         }
     }
 
+    public void remove(String key) throws IOException, KeyNotFoundException {
+        lock.readLock().lock();
+        try {
+            if (!isKeyFound(key)) {
+                throw new KeyNotFoundException("Key not found.");
+            }
+            LinkedTreeMap valueObj = (LinkedTreeMap) dataMap.get(key);
+            checkTtlValidity(valueObj);
+            dataMap.remove(key);
+            FileWriter writer = new FileWriter(file);
+            Gson gson = new Gson();
+            String json = gson.toJson(dataMap);
+            writer.write(json);
+            writer.close();
+            System.out.println("Key removed");
+            return;
+
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    void checkTtlValidity(LinkedTreeMap valueObj) throws KeyNotFoundException {
+        long ttl = (long) Double.parseDouble(valueObj.get("ttl").toString());
+        if (ttl > 0 && ttl < (System.currentTimeMillis() / 1000)) {
+            throw new KeyNotFoundException("Key not found. Key might have expired");
+        }
+    }
+
+    boolean isKeyFound(String key) {
+        LinkedTreeMap valueObj = (LinkedTreeMap) dataMap.get(key);
+        if (valueObj == null || valueObj.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    private JsonObject getJsonObjectFromUser() throws IOException {
+        JsonObject jsonObject = null;
+        long valueLength = 0l;
+        do {
+            System.out.println("Enter valid json string");
+
+            String jsonString = FreshStore.scan.nextLine();
+            valueLength = jsonString.getBytes().length;
+            if (valueLength > 16384l) {
+                throw new IOException("Size of value exceeds 16KB limit");
+            }
+            try {
+                JsonElement jsonElement = new JsonParser().parse(jsonString);
+                jsonObject = jsonElement.getAsJsonObject();
+            } catch (JsonSyntaxException | IllegalStateException e) {
+                System.out.println("Invalid json string");
+            }
+        } while (jsonObject == null);
+        return jsonObject;
+    }
+
     private void prettyPrint(String value) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonParser jp = new JsonParser();
@@ -108,54 +144,9 @@ public class ClientStore {
         System.out.println(prettyJsonString);
     }
 
-    public void remove(String key) throws IOException {
-        lock.readLock().lock();
-        try {
-            LinkedTreeMap valueObj = (LinkedTreeMap) dataMap.get(key);
-            if (valueObj == null || valueObj.isEmpty()) {
-                System.out.println("Key not found");
-                return;
-            }
-            long ttl = (long) Double.parseDouble(valueObj.get("ttl").toString());
-            if (ttl > 0 && ttl < (System.currentTimeMillis() / 1000)) {
-                System.out.println("Key not found");
-                return;
-            } else {
-                LinkedTreeMap deletedObj = (LinkedTreeMap) dataMap.remove(key);
-                System.out.println("Key Removed");
-                FileWriter writer = new FileWriter(file);
-                Gson gson = new Gson();
-                String json = gson.toJson(dataMap);
-                writer.write(json);
-                writer.close();
-                return;
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-
-
-    }
-
+    //Inner class for incorporating ttl into every value
     class TTLValueObj {
-        public long getTtl() {
-            return ttl;
-        }
-
-        public void setTtl(long ttl) {
-            this.ttl = ttl;
-        }
-
-        public JsonObject getValue() {
-            return value;
-        }
-
         public void setValue(JsonObject value) {
-            this.value = value;
-        }
-
-        public TTLValueObj(long ttl, JsonObject value) {
-            this.ttl = ttl;
             this.value = value;
         }
 

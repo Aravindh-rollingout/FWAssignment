@@ -15,7 +15,6 @@ public class FreshClient {
         int choice = FreshStore.getIntegerInput(s, 1, 2);
         File dir = null;
         String filepath = null;
-        File file = null;
         String path = null;
         if (choice == 1) {
             System.out.println("Enter file path only. Do not enter filename. The fileaname will be your username.");
@@ -25,26 +24,17 @@ public class FreshClient {
                 System.out.println(path);
                 dir = new File(path);
                 if (!dir.exists()) {
-                    if (dir.mkdir()) {
+                    if (dir.mkdirs()) {
                         {
                             System.out.println("Directory is created!");
-                            try {
-                                createFreshFile(path);
-                            } catch (IOException e) {
-                                System.out.println("Failed to create file in directory.Try again!");
-                            }
+                            createFreshFile(path);
                         }
                     } else {
                         System.out.println("Failed to create directory!");
                         System.out.println("Enter valid file path");
                     }
                 } else {
-                    try {
-                        createFreshFile(path);
-                    } catch (IOException e) {
-                        System.out.println("Failed to create file in directory!. Try again with another filepath");
-                    }
-
+                    createFreshFile(path);
                 }
             } while (!dir.exists());
         }
@@ -66,11 +56,11 @@ public class FreshClient {
 
     private void createFreshFile(String path) throws IOException {
         String out = null;
-        if (path.charAt(path.length() - 1) != separatorChar) {
-            out = path.substring(0, path.length() - 1) + this.userName + ".json";
-        } else {
-            out = path + separator + this.userName + ".json";
+        while (path.endsWith("/") || path.endsWith(separator) || path.endsWith("\\")) {
+            path = path.substring(0, path.length() - 1);
         }
+        out = path + separator + this.userName + ".json";
+        System.out.println(out);
         File file = new File(out);
         file.createNewFile();
         System.out.println("Path where file has been created : " + file.getAbsolutePath() + "\n");
@@ -85,7 +75,7 @@ public class FreshClient {
         this.filepath = null;
     }
 
-    static FreshClient createFreshClient(String newUserName) {
+    public static FreshClient createFreshClient(String newUserName) {
         FreshClient fc = new FreshClient(newUserName);
         return fc;
     }

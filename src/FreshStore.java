@@ -30,16 +30,19 @@ public class FreshStore {
         do {
             int userChoice = getIntegerInput(message, 1, 3);
             int loginChoice = 0;
-            if (userChoice == 1) {
-                System.out.println("Sign In !!!\n" +
-                        "Enter username to login\n");
-                String userName = scan.next();
-                client = getUserDetails(userName);
-            } else if (userChoice == 2) {
-                client = getUserDetails();
-            } else if (userChoice == 3) {
-                System.out.println("Thank you\n");
-                return null;
+            switch (userChoice) {
+                case 1:
+                    System.out.println("Sign In !!!\n" +
+                            "Enter username to login\n");
+                    String userName = scan.next();
+                    client = getUserDetails(userName);
+                    break;
+                case 2:
+                    client = getUserDetails();
+                    break;
+                case 3:
+                    System.out.println("Thank you\n");
+                    return null;
             }
         } while (client == null);
         return client;
@@ -66,36 +69,29 @@ public class FreshStore {
             }
             userChoice = getIntegerInput(message, 1, 5);
 
-            if (userChoice == 5) {
-                return;
-            }
+            //All operations require a key so key is retrieved beforehand.
             String key = null;
             if (userChoice == 1 || userChoice == 2 || userChoice == 3) {
-                {
-                    do {
-                        System.out.println("Enter key");
-                        key = scan.next();
-                        if (key.length() > 8) {
-                            System.out.println("Kindly enter a key of size 8 characters or less\n");
-                        }
-                    } while (key.length() > 8);
-                }
-                if (userChoice == 1) {
-                    try {
+                key = FreshStoreUtil.getKey(userChoice);
+            }
+
+            //CRD operations for a key
+            try {
+                switch (userChoice) {
+                    case 1:
                         clientStore.storeKey(key);
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                        System.out.println("Error while storing key. Try again");
-                    }
-                } else if (userChoice == 2) {
-                    clientStore.read(key);
-                } else if (userChoice == 3) {
-                    try {
+                        break;
+                    case 2:
+                        clientStore.read(key);
+                        break;
+                    case 3:
                         clientStore.remove(key);
-                    } catch (IOException e) {
-                        System.out.println("Error while storing key. Try again");
-                    }
+                        break;
+                    case 4:
+                        return;
                 }
+            } catch (IOException | KeyNotFoundException e) {
+                System.out.println(e.getMessage());
             }
         } while (userChoice != 4);
     }
@@ -118,13 +114,13 @@ public class FreshStore {
             System.out.println("A user with this name already exists. Redirecting to login page\n");
             return null;
         }
-        try {
-            client.updateClientFilePath();
-        } catch (IOException e) {
-            System.out.println("Error creating filepath\n");
-            e.printStackTrace();
-            return null;
-        }
+        do {
+            try {
+                client.updateClientFilePath();
+            } catch (IOException e) {
+                System.out.println("Error creating filepath. Please try again\n");
+            }
+        } while (client.getFilepath() == null);
 
         try {
             FileOperator.writeNewClientToFile(client);
@@ -139,8 +135,8 @@ public class FreshStore {
     }
 
     private static String getValidatedUsername() {
+        //Username is validated with regex to ensure alphanumeric values for username.
         String newUserName;
-
         System.out.println("Welcome new user.\n" +
                 "To proceed with the signup, \n" +
                 "Kindly enter a username with only letters and digits\n");

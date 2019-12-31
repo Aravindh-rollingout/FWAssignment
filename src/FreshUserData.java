@@ -8,10 +8,6 @@ public class FreshUserData {
         this.freshClients = new ArrayList<FreshClient>();
     }
 
-    public FreshUserData(List<FreshClient> freshClients) {
-        this.freshClients = freshClients;
-    }
-
     public List<FreshClient> getFreshClients() {
         return freshClients;
     }
@@ -37,6 +33,5 @@ public class FreshUserData {
             }
         }
         return null;
-
     }
 }
