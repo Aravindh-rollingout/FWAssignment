@@ -1,17 +1,26 @@
 # FWAssignment
+Kindly refer screenshots attached for further clarity.
+https://github.com/Aravindh-rollingout/FWAssignment/issues/1
+
 The project uses json files as a key-value data store; 
 CRD operations over the data store can be performed from the console.
 No third party data stores have been used.
+The application is tested only in the Windows environment; but is intended to support Mac and Linux also.
 
-Main Execution starts at FreshStore.
+Main Execution starts at FreshStore.java.
 
 1.FreshStore - Main class.
+
 2.FreshStoreUtil - contains utility operations pertaining to the application.
+
 3.FreshClient - Class containing client specific data and operations.
+
 4.FreshUserdata - Class used as format for the 'clients.json' file where all client details are stored.
+
 5.ClientStore - contains implementation of CRD operations over data store.
 
-Problem statement Interpretation:
+
+Problem statement interpretation:
 
 [] Once user logs in using his username. He can give a specific filepath where his data store
  <username>.json will be created or the file will be stored in 
@@ -33,5 +42,8 @@ Non-functional requirements.
 [] Read and write operations are added with Reentrant Read-Write locks so all reads will wait until writes complete.
  
 
-Kindly refer screenshots attached for further clarity.
-The application is tested only in the Windows environment; but is intended to support Mac and Linux also.
+Sample File path:(Windows)
+C:\\mystore\data
+
+Sample json String:
+{"name":"mkyong","age":38,"position":["Founder","CTO","Writer"],"skills":["java","python","node","kotlin"],"salary":{"2018":14000,"2012":12000,"2010":10000}}

@@ -21,7 +21,6 @@ public class FreshClient {
             do {
                 System.out.println("Enter file path to proceed");
                 path = FreshStore.scan.next();
-                System.out.println(path);
                 dir = new File(path);
                 if (!dir.exists()) {
                     if (dir.mkdirs()) {
