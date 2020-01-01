@@ -14,7 +14,7 @@ public class FreshStoreUtil {
     private static String getDisplayName(int userChoice) {
         switch (userChoice) {
             case 1:
-                return "store";
+                return "stored";
 
             case 2:
                 return "read";

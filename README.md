@@ -2,10 +2,14 @@
 Kindly refer screenshots attached for further clarity.
 https://github.com/Aravindh-rollingout/FWAssignment/issues/1
 
-The project uses json files as a key-value data store; 
+-The project uses json files as the key-value data store; 
 CRD operations over the data store can be performed from the console.
 No third party data stores have been used.
-The application is tested only in the Windows environment; but is intended to support Mac and Linux also.
+
+-Google's Gson library has been used and the dependency jar 'gson-2.8.2.jar' has been added to the repo under Lib\
+Kindly add this as a dependency in your environment before executing the code.
+ 
+-The application is tested only in the Windows environment; but is intended to support Mac and Linux also.
 
 Main Execution starts at FreshStore.java.
 
@@ -48,4 +52,4 @@ Sample File path:(Windows)
 C:\\mystore\data
 
 Sample json String:
-{"name":"mkyong","age":38,"position":["Founder","CTO","Writer"],"skills":["java","python","node","kotlin"],"salary":{"2018":14000,"2012":12000,"2010":10000}}
+{"name":"Aravindh","age":25,"position":["Founder","CTO","Developer"],"skills":["java","python","Django","kotlin"],"salary":{"2018":140000,"2012":120000,"2010":100000}}

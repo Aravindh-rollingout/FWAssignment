@@ -55,8 +55,7 @@ public class FreshStore {
                 "1.Store new Key in data set\n" +
                 "2.Read value of existing key in Data Store\n" +
                 "3.Remove a key from the data store\n" +
-                "4.Logout\n" +
-                "5.Exit\n";
+                "4.Logout\n";
         ClientStore clientStore = null;
         int userChoice = 0;
         do {
@@ -67,7 +66,7 @@ public class FreshStore {
                 System.out.println("Error occured while fetching data for client store from file");
                 return;
             }
-            userChoice = getIntegerInput(message, 1, 5);
+            userChoice = getIntegerInput(message, 1, 4);
 
             //All operations require a key so key is retrieved beforehand.
             String key = null;
