@@ -8,6 +8,10 @@ public class FreshClient {
     private final String userName;
     private String filepath;
 
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
+
     public void updateClientFilePath() throws IOException {
         String s = ("Do you wish to enter a custom file path for your data store?\n" +
                 "1.Yes\n" +
@@ -38,7 +42,7 @@ public class FreshClient {
             } while (!dir.exists());
         }
         if (choice == 2) {
-            path = File.listRoots()[0].getAbsolutePath() + "FreshStoreDefault";
+            path = getDefaultFilePath();
             dir = new File(path);
             dir.mkdirs();
             System.out.println("Initializing data store in default file path---" + path);
@@ -53,11 +57,17 @@ public class FreshClient {
         return filepath;
     }
 
-    private void createFreshFile(String path) throws IOException {
+    public static String getDefaultFilePath() {
+        return File.listRoots()[0].getAbsolutePath() + "FreshStoreDefault";
+    }
+
+    public void createFreshFile(String path) throws IOException {
         String out = null;
         while (path.endsWith("/") || path.endsWith(separator) || path.endsWith("\\")) {
             path = path.substring(0, path.length() - 1);
         }
+        File dir = new File(path);
+        dir.mkdirs();
         out = path + separator + this.userName + ".json";
         System.out.println(out);
         File file = new File(out);

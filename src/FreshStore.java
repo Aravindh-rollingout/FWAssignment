@@ -62,7 +62,7 @@ public class FreshStore {
             try {
                 //load clientStore of the logged in client
                 clientStore = new ClientStore(freshClient);
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 System.out.println("Error occured while fetching data for client store from file");
                 return;
             }
@@ -81,7 +81,8 @@ public class FreshStore {
                         clientStore.storeKey(key);
                         break;
                     case 2:
-                        clientStore.read(key);
+                        //pretty Printing json Object
+                        System.out.println(clientStore.read(key)[0]);
                         break;
                     case 3:
                         clientStore.remove(key);
@@ -106,7 +107,7 @@ public class FreshStore {
         client = FreshClient.createFreshClient(newUserName);
         try {
             FileOperator.checkClientDuplicate(client);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             System.out.println("Exception occured while fetching client data file\n");
             return null;
         } catch (UserAlreadyExistsException e) {

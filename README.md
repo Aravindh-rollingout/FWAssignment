@@ -11,7 +11,7 @@ Kindly add this as a dependency in your environment before executing the code.
  
 -The application is tested only in the Windows environment; but is intended to support Mac and Linux also.
 
-Main Execution starts at FreshStore.java.
+Main Execution starts at FreshStore.java.(For test case execution run TestCaseRunner)
 
 1.FreshStore - Main class.
 
@@ -53,3 +53,4 @@ C:\\mystore\data
 
 Sample json String:
 {"name":"Aravindh","age":25,"position":["Founder","CTO","Developer"],"skills":["java","python","Django","kotlin"],"salary":{"2018":140000,"2012":120000,"2010":100000}}
+

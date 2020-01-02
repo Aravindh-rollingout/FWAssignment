@@ -14,7 +14,7 @@ public class ClientStore {
     File file;
     ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public ClientStore(FreshClient fc) throws FileNotFoundException {
+    public ClientStore(FreshClient fc) throws IOException {
         file = new File(fc.getFilepath() + separatorChar + fc.getUserName() + ".json");
         FileReader fr = new FileReader(file);
         BufferedReader br = new BufferedReader(fr);
@@ -23,6 +23,8 @@ public class ClientStore {
         if (dataMap == null) {
             dataMap = new HashMap<>();
         }
+        br.close();
+        fr.close();
     }
 
     public void storeKey(String key) throws IOException, KeyNotFoundException {
@@ -31,7 +33,7 @@ public class ClientStore {
             if (isKeyFound(key)) {
                 throw new KeyNotFoundException("Key already exists.");
             }
-            ;
+
             TTLValueObj ttlValueObj = null;
             String prompt = ("Do you want to enter a ttl value for this Key\n" +
                     "1.Yes.\n" +
@@ -40,7 +42,7 @@ public class ClientStore {
             Long ttl = 0l;
             if (choice == 1) {
 
-                System.out.println("Enter ttl value");
+                System.out.println("Enter ttl value (in seconds)");
                 Long inputTtl = FreshStore.scan.nextLong();
                 ttl = inputTtl + (System.currentTimeMillis() / 1000);
             } else {
@@ -60,8 +62,9 @@ public class ClientStore {
     }
 
 
-    public void read(String key) throws KeyNotFoundException {
+    public String[] read(String key) throws KeyNotFoundException {
         lock.readLock().lock();
+        String prettyJson = null;
         try {
             if (!isKeyFound(key)) {
                 throw new KeyNotFoundException("Key not found. Try some other key name");
@@ -71,8 +74,8 @@ public class ClientStore {
 
             Gson gson = new Gson();
             String value = gson.toJson(valueObj.get("value"));
-            prettyPrint(value);
-            return;
+            prettyJson = prettyPrint(value);
+            return new String[]{prettyJson,value};
         } finally {
             lock.readLock().unlock();
         }
@@ -136,16 +139,16 @@ public class ClientStore {
         return jsonObject;
     }
 
-    private void prettyPrint(String value) {
+    private String prettyPrint(String value) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonParser jp = new JsonParser();
         JsonElement je = jp.parse(value);
         String prettyJsonString = gson.toJson(je);
-        System.out.println(prettyJsonString);
+        return prettyJsonString;
     }
 
     //Inner class for incorporating ttl into every value
-    class TTLValueObj {
+    static class TTLValueObj {
         public void setValue(JsonObject value) {
             this.value = value;
         }

@@ -8,7 +8,7 @@ import static java.io.File.separatorChar;
 
 public class FileOperator {
 
-    public static void checkClientDuplicate(FreshClient fc) throws FileNotFoundException, UserAlreadyExistsException {
+    public static void checkClientDuplicate(FreshClient fc) throws IOException, UserAlreadyExistsException {
         FreshUserData dataObj = getClientDetailsFromFile();
         if (dataObj == null) {
             dataObj = new FreshUserData();
@@ -59,7 +59,7 @@ public class FileOperator {
                 System.out.println("No client match found");
                 return null;
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             System.out.println("Error occured while reading client data file");
             return null;
         }
@@ -71,7 +71,7 @@ public class FileOperator {
         return client;
     }
 
-    private static FreshUserData getClientDetailsFromFile() throws FileNotFoundException {
+    private static FreshUserData getClientDetailsFromFile() throws IOException {
         //If directory and file of client data does not exist create it.
         File file = getClientDataFile();
 
@@ -82,11 +82,13 @@ public class FileOperator {
         //parse json file data
         Gson gson = new Gson();
         FreshUserData dataObj = gson.fromJson(br, FreshUserData.class);
+        fr.close();
+        br.close();
         return dataObj;
     }
 
-    private static File getClientDataFile() {
-        String clientDataPath = File.listRoots()[0].getAbsolutePath() + "FreshClientData";
+    public static File getClientDataFile() {
+        String clientDataPath = getClientdataFilePath();
         File dir = new File(clientDataPath);
         dir.mkdirs();
         File file = null;
@@ -100,13 +102,17 @@ public class FileOperator {
         return file;
     }
 
+    public static String getClientdataFilePath() {
+        return File.listRoots()[0].getAbsolutePath() + "FreshClientData";
+    }
+
 
     public static void storeJsonInFile(File file, HashMap dataMap) throws IOException {
         final long maxSizeOneGB = 1073741824L;
         FileWriter writer = new FileWriter(file);
         Gson gson = new Gson();
         String json = gson.toJson(dataMap);
-        if (json.getBytes().length > maxSizeOneGB) {
+        if ((json.getBytes().length * 2) > maxSizeOneGB) {
             throw new IOException("File size will exceed 1GB on adding this key-value pair");
         }
         writer.write(json);
