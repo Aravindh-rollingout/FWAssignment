@@ -93,4 +93,35 @@ public class TestStoreOperations extends TestCase {
         }
         readFileClient.read(key);
     }
+    //Testcase to read deleted key
+    @Test
+    public void testDeleteKey() throws KeyNotFoundException {
+        String key = "sampleKey";
+        ClientStore.TTLValueObj ttlValueObj = new ClientStore.TTLValueObj(10000l + (System.currentTimeMillis() / 1000));
+        JsonObject jsonObject = new JsonObject();
+        String jsonString = "{\"name\":\"Aravindh\",\"age\":25,\"position\":[\"Founder\",\"CTO\",\"Developer\"],\"skills\":[\"java\",\"python\",\"Django\",\"kotlin\"],\"salary\":{\"2018\":140000,\"2012\":120000,\"2010\":100000}}";
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        jsonObject = jsonElement.getAsJsonObject();
+        ttlValueObj.setValue(jsonObject);
+        ClientStore readFileClient = null;
+        clientStore.dataMap.put(key, ttlValueObj);
+        try {
+            FileOperator.storeJsonInFile(clientStore.file, clientStore.dataMap);
+            readFileClient = new ClientStore(client);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            readFileClient.remove(key);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            readFileClient.read(key);
+            assertFalse(true);
+        }catch (KeyNotFoundException e)
+        {
+            assertTrue(true);
+        }
+    }
 }
